@@ -7,7 +7,7 @@
 
 #define timeLimit 3000 //3 seconds
 #define rangeLimit 500 //50 cm
-#define countIn 0x01
+#define countIn 0x01 //EEPROM addresses
 #define countOut 0x09
 
 VL53L0X sensor1;
@@ -206,7 +206,7 @@ void callback(String topic, byte* payload, unsigned int length) {
     EEPROM.commit();
   }
 }
-
+//Since ESP8266 only stores EEPROM as a byte, we need to split value into low and high bits then store them
 void eeWriteInt(int pos, int val) {
     byte* p = (byte*) &val;
     EEPROM.write(pos, *p);
