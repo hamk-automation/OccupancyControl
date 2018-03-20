@@ -18,12 +18,9 @@
 VL53L0X sensor1;
 VL53L0X sensor2;
 
-
 int nowIn, nowOut, prevIn, prevOut, rangeLimit;
 unsigned long last1,last2;
-
 enum {phase0, phase1A, phase1B, phase1C, phase2A, phase2B, phase2C}; // counting phases of each sensor 
-
 volatile int dir1,dir2;
 
 void setup() {
@@ -72,7 +69,6 @@ void runDAQ(){
   }
 
  //.........................CountIn phases..................................//
-
   if(sensor1state == LOW && dir2==phase2A){
     dir1= phase1B;
     last1=millis();
@@ -95,7 +91,6 @@ void runDAQ(){
   if(dir2  == phase2B && sensor1state==LOW){
     dir2= phase2C;
   }
- 
   if(dir2 == phase2C && sensor1state==HIGH){
     eeWriteInt(countOut, eeGetInt(countOut)+1);
     dir2=phase2A;
@@ -103,10 +98,11 @@ void runDAQ(){
   if((millis()-last2>timeLimit) && dir2==phase2B){ //timeout
     dir2=phase2A;
   }
+  
   if (sensor1.timeoutOccurred() ||sensor2.timeoutOccurred()) {
     delay(1000);
     ESP.restart();
-    }
+  }
 
   Serial.print("Sensor1: ");
   Serial.print(sensor1Distance);
@@ -120,8 +116,8 @@ void runDAQ(){
   Serial.print("Count Out: ");
   Serial.print(eeGetInt(countOut));
   Serial.print("\n");
- 
 }
+
 void sensorsInit(){
   pinMode(sensor2Shutdown, OUTPUT);
   pinMode(sensor1Shutdown, OUTPUT);
@@ -154,14 +150,15 @@ void sensorsInit(){
   dir1=phase0;
   dir2=phase0;
 }
+
 void wifiInit() {
   WiFiManager wifiManager;
 //  wifiManager.resetSettings();
   wifiManager.autoConnect("VictoryDemo");
   Serial.println("connected...yeey :)");
 }
+
 void postData(int comeIn, int comeOut){
-  
   HTTPClient http;
   static char msg[50];
   String fingerprint="d0ef874071f9f864abf5c1dc6376b591ee989866";
@@ -178,13 +175,10 @@ void postData(int comeIn, int comeOut){
 }
 
 void distanceSampling(int val){
-  
  static int i=0;
  static unsigned long last=millis();
  static unsigned long int distance=0;
- 
  Serial.printf("i is: %d \t distance is: %d\n", i,distance);
- 
  if(val <upperLimit && val >lowerLimit){
     distance+= val;
     i++;
@@ -202,7 +196,6 @@ void distanceSampling(int val){
  }
  delay(500);
 }
-
 //Since ESP8266 only stores EEPROM as a byte, we need to split value into low and high bits then store them
 void eeWriteInt(int pos, int val) {
     byte* p = (byte*) &val;
@@ -212,6 +205,7 @@ void eeWriteInt(int pos, int val) {
     EEPROM.write(pos + 3, *(p + 3));
     EEPROM.commit();
 }
+
 int eeGetInt(int pos) {
     int val;
     byte* p = (byte*) &val;
