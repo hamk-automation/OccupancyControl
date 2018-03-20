@@ -33,40 +33,8 @@ void setup() {
   sensorsInit(); 
   wifiInit();
 }
-void sensorsInit(){
-  pinMode(sensor2Shutdown, OUTPUT);
-  pinMode(sensor1Shutdown, OUTPUT);
 
-  delay(10);
-  pinMode(sensor1Shutdown, INPUT);
-  sensor1.setAddress(41);
-  
-  delay(10);
-  
-  pinMode(sensor2Shutdown, INPUT);
-  sensor2.setAddress(50);
-  
-  sensor1.init();
-  sensor2.init();
-
-  sensor1.setTimeout(500);
-  sensor2.setTimeout(500);
-
-  sensor1.setSignalRateLimit(0.1);
-  sensor1.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
-  sensor1.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
-
-  sensor2.setSignalRateLimit(0.1);
-  sensor2.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
-  sensor2.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
-
-  sensor1.setMeasurementTimingBudget(20000);
-  sensor2.setMeasurementTimingBudget(20000);
-  dir1=phase0;
-  dir2=phase0;
-}
 void loop() {
-
   nowIn= eeGetInt(countIn);
   nowOut= eeGetInt(countOut);
   
@@ -153,6 +121,38 @@ void runDAQ(){
   Serial.print(eeGetInt(countOut));
   Serial.print("\n");
  
+}
+void sensorsInit(){
+  pinMode(sensor2Shutdown, OUTPUT);
+  pinMode(sensor1Shutdown, OUTPUT);
+
+  delay(10);
+  pinMode(sensor1Shutdown, INPUT);
+  sensor1.setAddress(41);
+  
+  delay(10);
+  
+  pinMode(sensor2Shutdown, INPUT);
+  sensor2.setAddress(50);
+  
+  sensor1.init();
+  sensor2.init();
+
+  sensor1.setTimeout(500);
+  sensor2.setTimeout(500);
+
+  sensor1.setSignalRateLimit(0.1);
+  sensor1.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
+  sensor1.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
+
+  sensor2.setSignalRateLimit(0.1);
+  sensor2.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
+  sensor2.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
+
+  sensor1.setMeasurementTimingBudget(20000);
+  sensor2.setMeasurementTimingBudget(20000);
+  dir1=phase0;
+  dir2=phase0;
 }
 void wifiInit() {
   WiFiManager wifiManager;
