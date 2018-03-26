@@ -55,5 +55,25 @@ C:\Users\Boss\AppData\Local\Temp\VMBuilds\testLaser\esp8266_d1_mini\Debug\testLa
  C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266/Server.h \
  C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src/WiFiClientSecure.h \
  C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src/include/ssl.h \
- C:\Users\Boss\Documents\Arduino\libraries\PubSubClient\src/PubSubClient.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\DNSServer\src/DNSServer.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src/WiFiUdp.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266/Udp.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src/include/slist.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WebServer\src/ESP8266WebServer.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WebServer\src/detail/RequestHandler.h \
+ C:\Users\Boss\Documents\Arduino\libraries\WiFiManager/WiFiManager.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/include/user_interface.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/include/os_type.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/include/ets_sys.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/lwip/include/lwip/ip_addr.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/lwip/include/lwip/opt.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/lwip/include/lwipopts.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/lwip/include/lwip/debug.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/lwip/include/lwip/arch.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/lwip/include/arch/cc.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/lwip/include/lwip/def.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/include/queue.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/include/spi_flash.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266HTTPClient\src/ESP8266HTTPClient.h \
+ C:\Users\Boss\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src/WiFiClient.h \
  C:\Program\ Files\ (x86)\Microsoft\ Visual\ Studio\2017\Enterprise\Common7\IDE\Extensions\xaohtdp2.q2m\Micro\ Platforms\default\debuggers\VM_DBG/VM_DBG.h

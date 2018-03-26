@@ -1,6 +1,7 @@
 #include <EEPROM.h> //Store counter in EEPROM memory to avoid sudden reset
 #include <Wire.h>// I2C is used to communicate with sensors
 #include <VL53L0X.h>// Sensor Library
+
 #include <ESP8266WiFi.h>// WiFi Library
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
@@ -18,7 +19,6 @@
 VL53L0X sensor1;
 VL53L0X sensor2;
 
-
 int nowIn, nowOut, prevIn, prevOut, rangeLimit;
 unsigned long last1,last2;
 
@@ -28,6 +28,7 @@ volatile int dir1,dir2;
 
 void setup() {
   Serial.begin(115200);
+  pinMode(LED_BUILTIN, HIGH);
   Wire.begin();
   EEPROM.begin(128);
   sensorsInit(); 
@@ -71,7 +72,7 @@ void loop() {
   nowOut= eeGetInt(countOut);
   
   runDAQ(); //Run   
-  if(nowIn != prevIn || nowOut != prevOut){ //MQTT push 
+  if(nowIn != prevIn || nowOut != prevOut){ 
     postData(nowIn,nowOut);
   }
   
@@ -90,18 +91,8 @@ void runDAQ(){
   if(dir1==phase0 && dir2==phase0){
     distanceSampling(sensor1Distance);
   }
-
-  
-  if(sensor1Distance< rangeLimit && sensor1Distance > lowerLimit){
-    sensor1state= LOW;
-  }else{
-    sensor1state= HIGH;
-  }
-  if(sensor2Distance<rangeLimit && sensor2Distance > lowerLimit){
-    sensor2state= LOW;
-  } else{
-    sensor2state= HIGH;
-  }
+  sensor1state=(sensor1Distance< rangeLimit && sensor1Distance > lowerLimit) ? LOW : HIGH;
+  sensor2state=(sensor2Distance< rangeLimit && sensor2Distance > lowerLimit) ? LOW : HIGH;
 
  //.........................CountIn phases..................................//
 
@@ -152,7 +143,6 @@ void runDAQ(){
   Serial.print("Count Out: ");
   Serial.print(eeGetInt(countOut));
   Serial.print("\n");
- 
 }
 void wifiInit() {
   WiFiManager wifiManager;
@@ -161,20 +151,23 @@ void wifiInit() {
   Serial.println("connected...yeey :)");
 }
 void postData(int comeIn, int comeOut){
-  
+  digitalWrite(LED_BUILTIN, LOW);
   HTTPClient http;
+  http.setReuse(true);
   static char msg[50];
-  String fingerprint="d0ef874071f9f864abf5c1dc6376b591ee989866";
+  static int port = 443;
+  String fingerprint = "d0ef874071f9f864abf5c1dc6376b591ee989866";
+  String host = "konttiserver.ddns.net";
+  String urlAPI = "/api/v1/hamk/tung";
 
   snprintf(msg, 75, "{\"countIn\": %d, \"countOut\": %d,\"id\": \"hamk\"}", comeIn, comeOut);
-  Serial.print("connecting to konttiserver.ddns.net");
-  http.begin("konttiserver.ddns.net", 443, "/api/v1/hamk/tung",fingerprint);
+  http.begin(host, port, urlAPI, fingerprint);
   http.addHeader("Content-Type", "application/json");
   int postcode = http.POST(msg);
-  Serial.println(postcode);
+
   String payload = http.getString();
-  Serial.println(payload);
   http.end();
+  digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void distanceSampling(int val){
@@ -190,14 +183,12 @@ void distanceSampling(int val){
     i++;
  }
  if(millis()-last >= 5000){
-  if(i==0){
-    rangeLimit= upperLimit;
-  }else{
-    rangeLimit= (distance/i)-300;
-  }
+  rangeLimit= (i == 0) ? upperLimit : (distance / i) - lowerLimit;
+
   dir1= phase1A;
   dir2= phase2A;
   Serial.printf("Range now is: %d\n",rangeLimit);
+  digitalWrite(LED_BUILTIN, HIGH);
   return;
  }
  delay(500);
