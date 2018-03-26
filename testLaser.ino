@@ -21,9 +21,7 @@ VL53L0X sensor2;
 
 int nowIn, nowOut, prevIn, prevOut, rangeLimit;
 unsigned long last1,last2;
-
 enum {phase0, phase1A, phase1B, phase1C, phase2A, phase2B, phase2C}; // counting phases of each sensor 
-
 volatile int dir1,dir2;
 
 void setup() {
@@ -34,6 +32,84 @@ void setup() {
   sensorsInit(); 
   wifiInit();
 }
+
+void loop() {
+  nowIn= eeGetInt(countIn);
+  nowOut= eeGetInt(countOut);
+  
+  runDAQ(); //Run   
+  if(nowIn != prevIn || nowOut != prevOut){ 
+    postData(nowIn,nowOut);
+  }
+  
+  prevIn=nowIn;
+  prevOut=nowOut;
+  delay(10);
+}
+
+void runDAQ(){
+  bool sensor1state;
+  bool sensor2state;
+
+  int sensor1Distance = sensor1.readRangeSingleMillimeters();
+  int sensor2Distance = sensor2.readRangeSingleMillimeters();
+  
+  if(dir1==phase0 && dir2==phase0){
+    distanceSampling(sensor1Distance);
+  }
+  sensor1state=(sensor1Distance< rangeLimit && sensor1Distance > lowerLimit) ? LOW : HIGH;
+  sensor2state=(sensor2Distance< rangeLimit && sensor2Distance > lowerLimit) ? LOW : HIGH;
+
+ //.........................CountIn phases..................................//
+  if(sensor1state == LOW && dir2==phase2A){
+    dir1= phase1B;
+    last1=millis();
+  }
+  if(dir1  == phase1B && sensor2state==LOW){
+    dir1= phase1C;
+  }
+  if(dir1 == phase1C && sensor2state==HIGH){
+    eeWriteInt(countIn, eeGetInt(countIn)+1);
+    dir1=phase1A;
+  }
+  if((millis()-last1>timeLimit)&& dir1==phase1B){ //timeout
+    dir1=phase1A;
+  }
+//--------------------------CountOut phases---------------------------------//
+  if(sensor2state == LOW && dir1==phase1A){
+    dir2= phase2B;
+    last2= millis();
+  }
+  if(dir2  == phase2B && sensor1state==LOW){
+    dir2= phase2C;
+  }
+  if(dir2 == phase2C && sensor1state==HIGH){
+    eeWriteInt(countOut, eeGetInt(countOut)+1);
+    dir2=phase2A;
+  }
+  if((millis()-last2>timeLimit) && dir2==phase2B){ //timeout
+    dir2=phase2A;
+  }
+  
+  if (sensor1.timeoutOccurred() ||sensor2.timeoutOccurred()) {
+    delay(1000);
+    ESP.restart();
+  }
+
+  Serial.print("Sensor1: ");
+  Serial.print(sensor1Distance);
+  Serial.print("\t");
+  Serial.print("Sensor2: ");
+  Serial.print(sensor2Distance);  
+  Serial.print("\t");
+  Serial.print("Count In: ");
+  Serial.print(eeGetInt(countIn));
+  Serial.print("\t");
+  Serial.print("Count Out: ");
+  Serial.print(eeGetInt(countOut));
+  Serial.print("\n");
+}
+
 void sensorsInit(){
   pinMode(sensor2Shutdown, OUTPUT);
   pinMode(sensor1Shutdown, OUTPUT);
@@ -66,92 +142,19 @@ void sensorsInit(){
   dir1=phase0;
   dir2=phase0;
 }
-void loop() {
 
-  nowIn= eeGetInt(countIn);
-  nowOut= eeGetInt(countOut);
-  
-  runDAQ(); //Run   
-  if(nowIn != prevIn || nowOut != prevOut){ 
-    postData(nowIn,nowOut);
-  }
-  
-  prevIn=nowIn;
-  prevOut=nowOut;
-  delay(10);
-}
-
-void runDAQ(){
-  bool sensor1state;
-  bool sensor2state;
-
-  int sensor1Distance = sensor1.readRangeSingleMillimeters();
-  int sensor2Distance = sensor2.readRangeSingleMillimeters();
-  
-  if(dir1==phase0 && dir2==phase0){
-    distanceSampling(sensor1Distance);
-  }
-  sensor1state=(sensor1Distance< rangeLimit && sensor1Distance > lowerLimit) ? LOW : HIGH;
-  sensor2state=(sensor2Distance< rangeLimit && sensor2Distance > lowerLimit) ? LOW : HIGH;
-
- //.........................CountIn phases..................................//
-
-  if(sensor1state == LOW && dir2==phase2A){
-    dir1= phase1B;
-    last1=millis();
-  }
-  if(dir1  == phase1B && sensor2state==LOW){
-    dir1= phase1C;
-  }
-  if(dir1 == phase1C && sensor2state==HIGH){
-    eeWriteInt(countIn, eeGetInt(countIn)+1);
-    dir1=phase1A;
-  }
-  if((millis()-last1>timeLimit)&& dir1==phase1B){ //timeout
-    dir1=phase1A;
-  }
-//--------------------------CountOut phases---------------------------------//
-  if(sensor2state == LOW && dir1==phase1A){
-    dir2= phase2B;
-    last2= millis();
-  }
-  if(dir2  == phase2B && sensor1state==LOW){
-    dir2= phase2C;
-  }
- 
-  if(dir2 == phase2C && sensor1state==HIGH){
-    eeWriteInt(countOut, eeGetInt(countOut)+1);
-    dir2=phase2A;
-  }
-  if((millis()-last2>timeLimit) && dir2==phase2B){ //timeout
-    dir2=phase2A;
-  }
-  if (sensor1.timeoutOccurred() ||sensor2.timeoutOccurred()) {
-    delay(1000);
-    ESP.restart();
-    }
-
-  Serial.print("Sensor1: ");
-  Serial.print(sensor1Distance);
-  Serial.print("\t");
-  Serial.print("Sensor2: ");
-  Serial.print(sensor2Distance);  
-  Serial.print("\t");
-  Serial.print("Count In: ");
-  Serial.print(eeGetInt(countIn));
-  Serial.print("\t");
-  Serial.print("Count Out: ");
-  Serial.print(eeGetInt(countOut));
-  Serial.print("\n");
-}
 void wifiInit() {
   WiFiManager wifiManager;
 //  wifiManager.resetSettings();
   wifiManager.autoConnect("VictoryDemo");
   Serial.println("connected...yeey :)");
 }
+
 void postData(int comeIn, int comeOut){
+<<<<<<< HEAD
   digitalWrite(LED_BUILTIN, LOW);
+=======
+>>>>>>> d55208dad83fa9462720ba24a3fad1689562f4a1
   HTTPClient http;
   http.setReuse(true);
   static char msg[50];
@@ -171,13 +174,10 @@ void postData(int comeIn, int comeOut){
 }
 
 void distanceSampling(int val){
-  
  static int i=0;
  static unsigned long last=millis();
  static unsigned long int distance=0;
- 
  Serial.printf("i is: %d \t distance is: %d\n", i,distance);
- 
  if(val <upperLimit && val >lowerLimit){
     distance+= val;
     i++;
@@ -193,7 +193,6 @@ void distanceSampling(int val){
  }
  delay(500);
 }
-
 //Since ESP8266 only stores EEPROM as a byte, we need to split value into low and high bits then store them
 void eeWriteInt(int pos, int val) {
     byte* p = (byte*) &val;
@@ -203,6 +202,7 @@ void eeWriteInt(int pos, int val) {
     EEPROM.write(pos + 3, *(p + 3));
     EEPROM.commit();
 }
+
 int eeGetInt(int pos) {
     int val;
     byte* p = (byte*) &val;
