@@ -151,10 +151,7 @@ void wifiInit() {
 }
 
 void postData(int comeIn, int comeOut){
-<<<<<<< HEAD
   digitalWrite(LED_BUILTIN, LOW);
-=======
->>>>>>> d55208dad83fa9462720ba24a3fad1689562f4a1
   HTTPClient http;
   http.setReuse(true);
   static char msg[50];
