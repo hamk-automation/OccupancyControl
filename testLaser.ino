@@ -38,7 +38,6 @@ void setup() {
 }
 
 void loop() {
-  
   runDAQ(); //Run   
   
   if(measurementFlag){ 
@@ -71,8 +70,10 @@ void runDAQ(){
     dir1= phase1C;
   }
   if(dir1 == phase1C && sensor2state==HIGH){
+    digitalWrite(LED_BUILTIN, LOW);
     eeWriteInt(countIn, eeGetInt(countIn)+1);
     dir1=phase1A;
+    digitalWrite(LED_BUILTIN, HIGH);
   }
   if((millis()-last1>timeLimit)&& dir1==phase1B){ //timeout
     dir1=phase1A;
@@ -86,8 +87,10 @@ void runDAQ(){
     dir2= phase2C;
   }
   if(dir2 == phase2C && sensor1state==HIGH){
+    digitalWrite(LED_BUILTIN, LOW);
     eeWriteInt(countOut, eeGetInt(countOut)+1);
     dir2=phase2A;
+    digitalWrite(LED_BUILTIN, HIGH);
   }
   if((millis()-last2>timeLimit) && dir2==phase2B){ //timeout
     dir2=phase2A;
@@ -146,7 +149,6 @@ void wifiInit() {
 }
 
 void postData(){
-  digitalWrite(LED_BUILTIN, LOW);
   HTTPClient http;
   http.setReuse(true);
   static char msg[50];
@@ -164,7 +166,6 @@ void postData(){
 
   String payload = http.getString();
   http.end();
-  digitalWrite(LED_BUILTIN, HIGH);
   measurementFlag = false;
 }
 
