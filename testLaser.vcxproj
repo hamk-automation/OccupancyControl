@@ -80,9 +80,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="images.h">
-      <FileType>CppCode</FileType>
-    </ClInclude>
     <ClInclude Include="__vm\.testLaser.vsarduino.h" />
   </ItemGroup>
   <PropertyGroup>
@@ -93,7 +90,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties arduino.upload.port="COM9" />
+      <UserProperties arduino.upload.port="COM4" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

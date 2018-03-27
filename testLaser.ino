@@ -1,6 +1,7 @@
 #include <EEPROM.h> //Store counter in EEPROM memory to avoid sudden reset
 #include <Wire.h>// I2C is used to communicate with sensors
 #include <VL53L0X.h>// Sensor Library
+#include <Ticker.h>
 
 #include <ESP8266WiFi.h>// WiFi Library
 #include <DNSServer.h>
@@ -8,21 +9,23 @@
 #include <WiFiManager.h> 
 #include <ESP8266HTTPClient.h>
 
+#define DAQ_INTERVAL 5
 #define timeLimit 3000 //3 seconds
 #define upperLimit 1800
 #define lowerLimit 200
 #define countIn 0x01 //EEPROM addresses
 #define countOut 0x09
-#define sensor1Shutdown D5
-#define sensor2Shutdown D6
+#define sensor1Shutdown D6
+#define sensor2Shutdown D5
 
 VL53L0X sensor1;
 VL53L0X sensor2;
+Ticker DAQTimer;
 
-int nowIn, nowOut, prevIn, prevOut, rangeLimit;
-unsigned long last1,last2;
+int rangeLimit;
 enum {phase0, phase1A, phase1B, phase1C, phase2A, phase2B, phase2C}; // counting phases of each sensor 
 volatile int dir1,dir2;
+volatile bool measurementFlag= true;
 
 void setup() {
   Serial.begin(115200);
@@ -31,28 +34,27 @@ void setup() {
   EEPROM.begin(128);
   sensorsInit(); 
   wifiInit();
+  DAQTimer.attach(DAQ_INTERVAL, setMeasurementFlag);
 }
 
 void loop() {
-  nowIn= eeGetInt(countIn);
-  nowOut= eeGetInt(countOut);
   
   runDAQ(); //Run   
-  if(nowIn != prevIn || nowOut != prevOut){ 
-    postData(nowIn,nowOut);
-  }
   
-  prevIn=nowIn;
-  prevOut=nowOut;
+  if(measurementFlag){ 
+    postData();
+  }
+
   delay(10);
 }
 
 void runDAQ(){
+  unsigned long last1, last2;
   bool sensor1state;
   bool sensor2state;
 
-  int sensor1Distance = sensor1.readRangeSingleMillimeters();
-  int sensor2Distance = sensor2.readRangeSingleMillimeters();
+  int sensor1Distance = sensor1.readRangeContinuousMillimeters();
+  int sensor2Distance = sensor2.readRangeContinuousMillimeters();
   
   if(dir1==phase0 && dir2==phase0){
     distanceSampling(sensor1Distance);
@@ -129,16 +131,9 @@ void sensorsInit(){
   sensor1.setTimeout(500);
   sensor2.setTimeout(500);
 
-  sensor1.setSignalRateLimit(0.1);
-  sensor1.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
-  sensor1.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
+  sensor1.startContinuous();
+  sensor2.startContinuous();
 
-  sensor2.setSignalRateLimit(0.1);
-  sensor2.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
-  sensor2.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
-
-  sensor1.setMeasurementTimingBudget(20000);
-  sensor2.setMeasurementTimingBudget(20000);
   dir1=phase0;
   dir2=phase0;
 }
@@ -150,7 +145,7 @@ void wifiInit() {
   Serial.println("connected...yeey :)");
 }
 
-void postData(int comeIn, int comeOut){
+void postData(){
   digitalWrite(LED_BUILTIN, LOW);
   HTTPClient http;
   http.setReuse(true);
@@ -159,6 +154,8 @@ void postData(int comeIn, int comeOut){
   String fingerprint = "d0ef874071f9f864abf5c1dc6376b591ee989866";
   String host = "konttiserver.ddns.net";
   String urlAPI = "/api/v1/hamk/tung";
+  int comeIn= eeGetInt(countIn);
+  int comeOut= eeGetInt(countOut);
 
   snprintf(msg, 75, "{\"countIn\": %d, \"countOut\": %d,\"id\": \"hamk\"}", comeIn, comeOut);
   http.begin(host, port, urlAPI, fingerprint);
@@ -168,6 +165,7 @@ void postData(int comeIn, int comeOut){
   String payload = http.getString();
   http.end();
   digitalWrite(LED_BUILTIN, HIGH);
+  measurementFlag = false;
 }
 
 void distanceSampling(int val){
@@ -180,7 +178,7 @@ void distanceSampling(int val){
     i++;
  }
  if(millis()-last >= 5000){
-  rangeLimit= (i == 0) ? upperLimit : (distance / i) - lowerLimit;
+  rangeLimit = (i == 0) ? upperLimit : (distance / i) - lowerLimit;
 
   dir1= phase1A;
   dir2= phase2A;
@@ -189,6 +187,10 @@ void distanceSampling(int val){
   return;
  }
  delay(500);
+}
+
+void setMeasurementFlag() {
+  measurementFlag = true;
 }
 //Since ESP8266 only stores EEPROM as a byte, we need to split value into low and high bits then store them
 void eeWriteInt(int pos, int val) {
